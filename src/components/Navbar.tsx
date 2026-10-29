@@ -17,7 +17,9 @@ import {
   Sparkles, 
   RotateCcw,
   ShieldAlert,
-  HelpCircle
+  HelpCircle,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -196,6 +198,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <ShieldAlert className="w-4 h-4" />
           <span className="hidden xl:inline">حدود الأمان</span>
+        </button>
+
+        {/* Theme toggle */}
+        <button
+          onClick={() => document.documentElement.classList.toggle('dark')}
+          title="وضعية الليل/النهار"
+          className="p-1.5 text-[#C8E6C9] hover:text-[#FAF6F0] hover:bg-[#2D6A4F]/50 rounded-lg transition"
+        >
+          <Sun className="w-4 h-4" />
         </button>
 
         {/* Reset Canvas */}

@@ -177,7 +177,7 @@ export const STORY_TEMPLATES: StoryTemplate[] = [
           zIndex: 7,
           locked: false,
           hidden: false,
-          content: 'فريق مشروع تخرج لَمّاح — جامعة القاهرة 2026',
+          content: 'فريق مشروع تخرج لَمّاح — AITU',
           fontSize: 26,
           fontFamily: 'Readex Pro',
           fontWeight: '500',
