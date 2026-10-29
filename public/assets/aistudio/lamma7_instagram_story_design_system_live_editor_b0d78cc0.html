@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAMMA7 | لَمّاح — Instagram Story Design System & Live Editor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Kufam & Readex Pro for modern tech Arabic typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,400..900;1,400..900&family=Readex+Pro:wght@200..700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lamma: {
+                            dark: '#0E1A12',
+                            earth: '#1B2E21',
+                            botanical: '#2D6A4F',
+                            leaf: '#52B788',
+                            lime: '#39FF14',
+                            electric: '#00FF66',
+                            cream: '#FAF6F0',
+                            sand: '#E9E3D8',
+                            hudDark: 'rgba(14, 26, 18, 0.82)',
+                        }
+                    },
+                    fontFamily: {
+                        kufam: ['Kufam', 'sans-serif'],
+                        readex: ['Readex Pro', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Readex Pro', sans-serif;
+            background-color: #080E0A;
+            color: #FAF6F0;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scanline Animation */
+        @keyframes cvScan {
+            0% { top: 12%; opacity: 0.2; }
+            50% { opacity: 0.95; }
+            100% { top: 88%; opacity: 0.2; }
+        }
+
+        .animate-scan {
+            animation: cvScan 3.5s ease-in-out infinite alternate;
+        }
+
+        /* Target Reticle Pulse */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.97); }
+        }
+
+        .animate-reticle {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        /* Grid Background Pattern */
+        .tech-grid {
+            background-image: 
+                linear-gradient(to right, rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0E1A12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2D6A4F;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52B788;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(14, 26, 18, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(82, 183, 136, 0.2);
+        }
+
+        .glass-card-light {
+            background: rgba(250, 246, 240, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(45, 106, 79, 0.15);
+        }
+
+        /* Story Phone Viewport Aspect Ratio Fix */
+        .story-aspect {
+            aspect-ratio: 9 / 16;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-lamma-lime selection:text-lamma-dark">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-lamma-botanical/30 bg-lamma-dark/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3 space-x-reverse">
+            <!-- Brand Logo Mark -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lamma-botanical to-lamma-dark border border-lamma-lime/40 flex items-center justify-center text-lamma-lime font-kufam font-black text-xl shadow-[0_0_15px_rgba(57,255,20,0.2)]">
+                ل
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="font-kufam font-bold text-lg text-lamma-cream tracking-wide">LAMMA7</span>
+                    <span class="text-xs bg-lamma-lime/10 text-lamma-lime border border-lamma-lime/30 px-2 py-0.5 rounded-full font-mono">v2.4 AI Engine</span>
+                </div>
+                <p class="text-xs text-lamma-sand/70">نظام الهوية البصرية واستوديو قصص إنستغرام لـ "لَمّاح"</p>
+            </div>
+        </div>
+
+        <!-- Mode / System Actions -->
+        <div class="flex items-center gap-3">
+            <button onclick="toggleDesignSystemModal()" class="hidden sm:flex items-center gap-2 text-xs text-lamma-sand/90 hover:text-lamma-lime border border-lamma-botanical/50 px-3 py-1.5 rounded-lg hover:border-lamma-lime/50 transition">
+                <i class="fa-solid fa-book-open">p</i>
+                <span>دليل الهوية والألوان</span>
+            </button>
+            <button onclick="downloadCanvasSnapshot()" class="flex items-center gap-2 text-xs bg-lamma-lime text-lamma-dark font-bold px-4 py-2 rounded-lg hover:bg-lamma-electric transition shadow-[0_0_12px_rgba(57,255,20,0.3)]">
+                <i class="fa-solid fa-download"></i>
+                <span>تصدير التصميم</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 lg:p-6 max-w-[1800px] mx-auto w-full">
+
+        <!-- LEFT PANEL: Template Selector & Live Controls (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-5 order-2 lg:order-1">
+            
+            <!-- Category/Template Switcher Bar -->
+            <div class="bg-lamma-dark/80 border border-lamma-botanical/40 rounded-2xl p-4">
+                <h2 class="text-xs font-bold text-lamma-lime uppercase tracking-wider mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-layer-group ml-1"></i> اختر قالب القصة (Templates)</span>
+                    <span class="text-[10px] text-lamma-sand/60 font-mono">7 PRESETS AVAILABLE</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                    <!-- Template Buttons dynamically generated -->
+                    <button onclick="applyPreset(1)" id="btn-preset-1" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-lime/40 bg-lamma-botanical/30 text-lamma-cream text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-lime shadow-[0_0_8px_#39FF14]"></span>
+                        <div class="truncate">
+                            <div class="font-bold">1. تحديث المشروع</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">كل زرعة تستاهل حد ياخد باله منها</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(2)" id="btn-preset-2" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">2. رحلة التعلم</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">من أول سطر كود لحد أول زرعة</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(3)" id="btn-preset-3" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">3. كواليس التصنيع</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">بنجمع الأجزاء حبة حبة</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(4)" id="btn-preset-4" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">4. الرؤية الحاسوبية</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">بنعلّم لمّاح يشوف اللي مش باين</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(5)" id="btn-preset-5" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">5. التحديات والإنجاز</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">النهاردة جرّبنا، اتعلمنا، واتقدمنا</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(6)" id="btn-preset-6" class="preset-btn text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">6. سؤال واستطلاع</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">تفتكروا لمّاح هيقدر يكتشف ده؟</div>
+                        </div>
+                    </button>
+
+                    <button onclick="applyPreset(7)" id="btn-preset-7" class="preset-btn sm:col-span-2 text-right p-2.5 rounded-xl border border-lamma-botanical/40 bg-lamma-dark/50 text-lamma-sand text-xs flex items-center gap-2 transition hover:border-lamma-lime">
+                        <span class="w-2 h-2 rounded-full bg-lamma-sand/40"></span>
+                        <div class="truncate">
+                            <div class="font-bold">7. محطة جديدة (Milestone)</div>
+                            <div class="text-[10px] text-lamma-sand/70 truncate">مش مجرد روبوت… دي بداية فكرة</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Customization Controls Box -->
+            <div class="bg-lamma-dark/80 border border-lamma-botanical/40 rounded-2xl p-5 flex-1 flex flex-col gap-4 overflow-y-auto max-h-[580px]">
+                <div class="flex items-center justify-between border-b border-lamma-botanical/30 pb-2">
+                    <h3 class="text-sm font-bold text-lamma-cream flex items-center gap-2">
+                        <i class="fa-solid fa-[#00FF66] fa-sliders text-lamma-lime"></i>
+                        <span>محرر المحتوى والعناصر الحية</span>
+                    </h3>
+                    <span class="text-[10px] bg-lamma-botanical text-lamma-sand px-2 py-0.5 rounded">Live Customizer</span>
+                </div>
+
+                <!-- Text Customization -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-lamma-sand/80 mb-1">العنوان الرئيسي (Headline)</label>
+                        <input type="text" id="input-headline" oninput="updateStoryText()" 
+                            value="كل زرعة تستاهل حد ياخد باله منها." 
+                            class="w-full bg-lamma-earth/60 border border-lamma-botanical/60 rounded-xl px-3 py-2 text-xs text-lamma-cream focus:outline-none focus:border-lamma-lime transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-lamma-sand/80 mb-1">النص الفرعي / الوصف (Subtext)</label>
+                        <textarea id="input-subtext" oninput="updateStoryText()" rows="2"
+                            class="w-full bg-lamma-earth/60 border border-lamma-botanical/60 rounded-xl px-3 py-2 text-xs text-lamma-cream focus:outline-none focus:border-lamma-lime transition">تجارب الاختبار الميداني للروبوت لَمّاح في الكشف المبكر عن الآفات الزراعية باستخدام الذكاء الاصطناعي.</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-lamma-sand/80 mb-1">وسم الفئة (Category Tag)</label>
+                            <input type="text" id="input-tag" oninput="updateStoryText()" 
+                                value="تحديث ميداني #04" 
+                                class="w-full bg-lamma-earth/60 border border-lamma-botanical/60 rounded-xl px-3 py-2 text-xs text-lamma-cream focus:outline-none focus:border-lamma-lime transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-lamma-sand/80 mb-1">نسبة الدقة / AI Metrics</label>
+                            <input type="text" id="input-confidence" oninput="updateStoryText()" 
+                                value="98.4% Leaf Diagnostic" 
+                                class="w-full bg-lamma-earth/60 border border-lamma-botanical/60 rounded-xl px-3 py-2 text-xs text-lamma-cream focus:outline-none focus:border-lamma-lime transition">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Computer Vision Overlays Toggles -->
+                <div class="border-t border-lamma-botanical/30 pt-3">
+                    <h4 class="text-xs font-bold text-lamma-lime mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>طبقات الرؤية الحاسوبية (CV Layers)</span>
+                    </h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center gap-2 cursor-pointer bg-lamma-earth/40 p-2 rounded-lg border border-lamma-botanical/30 hover:border-lamma-lime/40">
+                            <input type="checkbox" id="toggle-scanline" checked onchange="toggleOverlay('scanline')" class="accent-lamma-lime">
+                            <span class="text-lamma-sand">شعاع المسح (Scan line)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-lamma-earth/40 p-2 rounded-lg border border-lamma-botanical/30 hover:border-lamma-lime/40">
+                            <input type="checkbox" id="toggle-boundingbox" checked onchange="toggleOverlay('boundingbox')" class="accent-lamma-lime">
+                            <span class="text-lamma-sand">مربع الاكتشاف (Box)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-lamma-earth/40 p-2 rounded-lg border border-lamma-botanical/30 hover:border-lamma-lime/40">
+                            <input type="checkbox" id="toggle-hud" checked onchange="toggleOverlay('hud')" class="accent-lamma-lime">
+                            <span class="text-lamma-sand">بطاقة البيانات (HUD Card)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-lamma-earth/40 p-2 rounded-lg border border-lamma-botanical/30 hover:border-lamma-lime/40">
+                            <input type="checkbox" id="toggle-safezone" onchange="toggleOverlay('safezone')" class="accent-lamma-lime">
+                            <span class="text-lamma-lime font-bold">Safe Zones IG</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Background Image Picker -->
+                <div class="border-t border-lamma-botanical/30 pt-3">
+                    <h4 class="text-xs font-bold text-lamma-sand/90 mb-2">خلفية القصة (Sample Visuals)</h4>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="changeBackground('leaf')" class="relative h-14 rounded-lg overflow-hidden border-2 border-lamma-lime group">
+                            <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Plant Leaf Close-up">
+                            <span class="absolute inset-0 bg-black/30 flex items-center justify-center text-[10px] text-white font-bold">ورقة نبات</span>
+                        </button>
+                        <button onclick="changeBackground('electronics')" class="relative h-14 rounded-lg overflow-hidden border border-lamma-botanical/50 group">
+                            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Circuit Board">
+                            <span class="absolute inset-0 bg-black/30 flex items-center justify-center text-[10px] text-white font-bold">الإلكترونيات</span>
+                        </button>
+                        <button onclick="changeBackground('field')" class="relative h-14 rounded-lg overflow-hidden border border-lamma-botanical/50 group">
+                            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Agricultural Field">
+                            <span class="absolute inset-0 bg-black/30 flex items-center justify-center text-[10px] text-white font-bold">الحقل المصري</span>
+                        </button>
+                        <button onclick="changeBackground('code')" class="relative h-14 rounded-lg overflow-hidden border border-lamma-botanical/50 group">
+                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="Code & AI Matrix">
+                            <span class="absolute inset-0 bg-black/30 flex items-center justify-center text-[10px] text-white font-bold">كود البرمجة</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Instagram Stickers Toggle -->
+                <div class="border-t border-lamma-botanical/30 pt-3">
+                    <h4 class="text-xs font-bold text-lamma-sand/90 mb-2">ملصقات إنستغرام التفاعلية (IG Stickers)</h4>
+                    <div class="flex gap-2">
+                        <button onclick="setSticker('poll')" class="flex-1 py-1.5 px-2 bg-lamma-earth/60 hover:bg-lamma-botanical text-xs text-lamma-sand rounded-lg border border-lamma-botanical/50 transition">
+                            <i class="fa-solid fa-square-poll-vertical text-lamma-lime ml-1"></i> استطلاع رأي
+                        </button>
+                        <button onclick="setSticker('question')" class="flex-1 py-1.5 px-2 bg-lamma-earth/60 hover:bg-lamma-botanical text-xs text-lamma-sand rounded-lg border border-lamma-botanical/50 transition">
+                            <i class="fa-solid fa-comments text-lamma-lime ml-1"></i> صندوق أسئلة
+                        </button>
+                        <button onclick="setSticker('none')" class="py-1.5 px-3 bg-lamma-earth/60 hover:bg-red-900/40 text-xs text-lamma-sand/70 rounded-lg border border-lamma-botanical/50 transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Live Story Canvas Preview Viewport (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col items-center justify-center order-1 lg:order-2 bg-lamma-earth/20 rounded-3xl p-4 lg:p-8 border border-lamma-botanical/30 relative min-h-[750px]">
+            
+            <!-- Canvas Frame Header Info -->
+            <div class="w-full max-w-[380px] flex items-center justify-between mb-3 text-xs text-lamma-sand/70">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-lamma-lime animate-pulse"></span>
+                    <span class="font-mono text-[11px]">1080 x 1920 PX (9:16 STORY)</span>
+                </div>
+                <div class="text-[11px] font-mono text-lamma-lime/90 bg-lamma-dark border border-lamma-lime/30 px-2 py-0.5 rounded">
+                    LAMMA7 VISION v2.4
+                </div>
+            </div>
+
+            <!-- THE INSTAGRAM STORY CONTAINER (9:16 Ratio) -->
+            <div id="story-canvas" class="story-aspect w-full max-w-[390px] bg-lamma-dark rounded-[36px] overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 border-lamma-earth flex flex-col justify-between transition-all duration-500 selection:bg-none">
+                
+                <!-- BACKGROUND IMAGE WITH GRADIENT OVERLAY -->
+                <div class="absolute inset-0 z-0">
+                    <img id="story-bg-img" src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1080&q=80" class="w-full h-full object-cover transition-opacity duration-500 scale-105" alt="Story Background Image">
+                    
+                    <!-- Dark Gradient Overlay for Typography Contrast -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-lamma-dark/90 via-lamma-dark/30 to-lamma-dark/95"></div>
+                    
+                    <!-- Tech Grid Mesh Overlay -->
+                    <div class="absolute inset-0 tech-grid opacity-40"></div>
+                </div>
+
+                <!-- INSTAGRAM UI TOP BAR (Mock Safezone Header) -->
+                <div class="relative z-20 pt-4 px-4 flex flex-col gap-2">
+                    <!-- IG Story Progress Bars -->
+                    <div class="flex gap-1.5 w-full">
+                        <div class="h-1 flex-1 bg-lamma-cream/90 rounded-full"></div>
+                        <div class="h-1 flex-1 bg-lamma-cream/30 rounded-full"></div>
+                        <div class="h-1 flex-1 bg-lamma-cream/30 rounded-full"></div>
+                    </div>
+
+                    <!-- Story Author Header -->
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-lamma-lime to-lamma-botanical p-[2px] shadow-sm">
+                                <div class="w-full h-full bg-lamma-dark rounded-full flex items-center justify-center font-kufam font-black text-lamma-lime text-xs">
+                                    ل
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-lamma-cream font-readex">lamma7.ai</span>
+                                    <i class="fa-solid fa-circle-check text-lamma-lime text-[10px]"></i>
+                                    <span class="text-[10px] text-lamma-sand/70">14h</span>
+                                </div>
+                                <span id="story-badge-category" class="text-[9px] font-mono text-lamma-lime uppercase tracking-wider block">#تحديث_ميداني</span>
+                            </div>
+                        </div>
+
+                        <!-- Top Technical Watermark / Logo Marker -->
+                        <div class="flex items-center gap-1 text-[10px] font-mono bg-lamma-dark/80 backdrop-blur border border-lamma-lime/30 px-2 py-1 rounded-md text-lamma-sand">
+                            <i class="fa-solid fa-robot text-lamma-lime"></i>
+                            <span>لَمّاح | LAMMA7</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPUTER VISION OVERLAY GRAPHICS (MIDDLE LAYER) -->
+                <div class="absolute inset-0 z-10 pointer-events-none">
+                    
+                    <!-- Animated CV Scan Line -->
+                    <div id="cv-scanline" class="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-lamma-lime to-transparent shadow-[0_0_15px_#39FF14] animate-scan top-1/3"></div>
+
+                    <!-- Bounding Box Target Frame -->
+                    <div id="cv-boundingbox" class="absolute top-[32%] right-[15%] w-[68%] h-[28%] border border-lamma-lime/80 rounded-lg backdrop-blur-[2px] transition-all duration-300">
+                        <!-- Corner Crosshairs -->
+                        <div class="absolute -top-1.5 -right-1.5 w-3 h-3 border-t-2 border-r-2 border-lamma-lime"></div>
+                        <div class="absolute -top-1.5 -left-1.5 w-3 h-3 border-t-2 border-l-2 border-lamma-lime"></div>
+                        <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 border-b-2 border-r-2 border-lamma-lime"></div>
+                        <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 border-b-2 border-l-2 border-lamma-lime"></div>
+                        
+                        <!-- AI Tag Banner -->
+                        <div class="absolute -top-6 right-0 bg-lamma-dark/90 border border-lamma-lime text-lamma-lime text-[10px] font-mono px-2 py-0.5 rounded-t flex items-center gap-1 shadow-lg">
+                            <span class="w-1.5 h-1.5 rounded-full bg-lamma-lime animate-ping"></span>
+                            <span id="cv-target-label">TARGET 01: LEAF_HEALTHY</span>
+                        </div>
+
+                        <!-- Target Center Reticle -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-60 animate-reticle">
+                            <div class="w-6 h-6 border border-dashed border-lamma-lime rounded-full"></div>
+                        </div>
+
+                        <!-- Bottom Confidence Bar -->
+                        <div class="absolute -bottom-5 left-0 right-0 flex justify-between text-[9px] font-mono text-lamma-sand/80 px-1">
+                            <span id="cv-confidence-text">CONFIDENCE: 98.4%</span>
+                            <span>CAM_01_FPS: 60</span>
+                        </div>
+                    </div>
+
+                    <!-- IG Safe Zones Visualizer (Hidden by default) -->
+                    <div id="ig-safezone-overlay" class="absolute inset-0 border-y-[90px] border-red-500/20 pointer-events-none hidden flex flex-col justify-between p-2">
+                        <span class="text-[10px] font-mono text-red-400 bg-red-950/80 px-2 py-0.5 rounded w-max">UNSAFE ZONE (INSTAGRAM TOP HEADER)</span>
+                        <span class="text-[10px] font-mono text-red-400 bg-red-950/80 px-2 py-0.5 rounded w-max self-end">UNSAFE ZONE (INSTAGRAM REPLY BAR)</span>
+                    </div>
+                </div>
+
+                <!-- MAIN CONTENT LAYER (MIDDLE TO BOTTOM) -->
+                <div class="relative z-20 px-5 pt-8 pb-10 flex flex-col justify-end flex-1 gap-4">
+
+                    <!-- Dynamic Floating Sticker Placeholders -->
+                    <div id="story-sticker-container" class="w-full flex justify-center">
+                        <!-- Poll Sticker Dynamic HTML injected here -->
+                    </div>
+
+                    <!-- Glassmorphism Main Content HUD Box -->
+                    <div id="cv-hud-card" class="glass-card rounded-2xl p-4 border border-lamma-lime/30 shadow-2xl relative overflow-hidden transition-all duration-300">
+                        
+                        <!-- Decorative Top Accent Line -->
+                        <div class="absolute top-0 right-0 left-0 h-[2px] bg-gradient-to-l from-lamma-lime via-lamma-botanical to-transparent"></div>
+
+                        <!-- Headline -->
+                        <h1 id="story-headline" class="font-kufam font-black text-xl lg:text-2xl text-lamma-cream leading-tight mb-2 tracking-wide">
+                            كل زرعة تستاهل حد ياخد باله منها.
+                        </h1>
+
+                        <!-- Subtext -->
+                        <p id="story-subtext" class="text-xs text-lamma-sand/90 leading-relaxed font-readex font-normal">
+                            تجارب الاختبار الميداني للروبوت لَمّاح في الكشف المبكر عن الآفات الزراعية باستخدام الذكاء الاصطناعي.
+                        </p>
+
+                        <!-- HUD Telemetry Bottom Status Bar -->
+                        <div class="mt-3 pt-3 border-t border-lamma-botanical/40 flex items-center justify-between text-[10px] font-mono text-lamma-sand/70">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-microchip text-lamma-lime"></i>
+                                <span>AI MODEL: YOLOv8-CROP</span>
+                            </div>
+                            <div class="text-lamma-lime font-bold">
+                                <span>لَمّاح 2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Branding Tagline -->
+                    <div class="flex items-center justify-between px-1 text-[10px] text-lamma-sand/60 font-mono">
+                        <span class="flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-lamma-lime"></span>
+                            مشروع تخرج - الذكاء الاصطناعي والربوتات
+                        </span>
+                        <span>#LAMMA7 #SmartFarming</span>
+                    </div>
+
+                </div>
+
+                <!-- INSTAGRAM UI BOTTOM REPLY MOCK BAR -->
+                <div class="relative z-20 pb-4 px-4 flex items-center gap-3">
+                    <div class="flex-1 bg-lamma-dark/60 border border-lamma-sand/20 rounded-full px-4 py-2 text-xs text-lamma-sand/50 flex items-center justify-between">
+                        <span>إرسال رسالة...</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-lamma-cream">
+                        <i class="fa-regular fa-heart text-lg"></i>
+                        <i class="fa-regular fa-paper-plane text-lg"></i>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- BRAND SYSTEM & GUIDELINES MODAL -->
+    <div id="design-system-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-lamma-dark border border-lamma-botanical/50 rounded-3xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 text-lamma-cream space-y-6 shadow-2xl">
+            
+            <div class="flex items-center justify-between border-b border-lamma-botanical/40 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-lamma-botanical text-lamma-lime flex items-center justify-center font-kufam font-bold text-xl">ل</div>
+                    <div>
+                        <h2 class="text-lg font-bold font-kufam">دليل هوية نظام القصص لـ "لَمّاح | LAMMA7"</h2>
+                        <p class="text-xs text-lamma-sand/70">Instagram Story Design System Guidelines</p>
+                    </div>
+                </div>
+                <button onclick="toggleDesignSystemModal()" class="text-lamma-sand hover:text-lamma-lime text-xl font-bold p-2">✕</button>
+            </div>
+
+            <!-- Color Palette Showcase -->
+            <div>
+                <h3 class="text-xs font-bold text-lamma-lime uppercase tracking-wider mb-3">1. لوحة الألوان الرسمية (Brand Palette)</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div class="p-3 rounded-xl bg-[#0E1A12] border border-lamma-botanical/40 text-center">
+                        <div class="w-full h-8 rounded-lg bg-[#0E1A12] border border-white/10 mb-2"></div>
+                        <div class="text-[11px] font-bold">Deep Forest</div>
+                        <div class="text-[9px] font-mono text-lamma-sand/60">#0E1A12</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#1B2E21] border border-lamma-botanical/40 text-center">
+                        <div class="w-full h-8 rounded-lg bg-[#1B2E21] mb-2"></div>
+                        <div class="text-[11px] font-bold">Dark Olive</div>
+                        <div class="text-[9px] font-mono text-lamma-sand/60">#1B2E21</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#2D6A4F] border border-lamma-botanical/40 text-center">
+                        <div class="w-full h-8 rounded-lg bg-[#2D6A4F] mb-2"></div>
+                        <div class="text-[11px] font-bold">Botanical Green</div>
+                        <div class="text-[9px] font-mono text-lamma-sand/60">#2D6A4F</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#52B788] border border-lamma-botanical/40 text-center text-lamma-dark">
+                        <div class="w-full h-8 rounded-lg bg-[#52B788] mb-2"></div>
+                        <div class="text-[11px] font-bold">Leaf Green</div>
+                        <div class="text-[9px] font-mono opacity-80">#52B788</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#39FF14]/10 border border-[#39FF14] text-center">
+                        <div class="w-full h-8 rounded-lg bg-[#39FF14] mb-2"></div>
+                        <div class="text-[11px] font-bold text-lamma-lime">Electric Vision</div>
+                        <div class="text-[9px] font-mono text-lamma-lime">#39FF14</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typography Guidelines -->
+            <div class="border-t border-lamma-botanical/30 pt-4">
+                <h3 class="text-xs font-bold text-lamma-lime uppercase tracking-wider mb-3">2. الطبوغرافيا والقواعد العربية (Typography Scale)</h3>
+                <div class="space-y-3 text-xs bg-lamma-earth/30 p-4 rounded-xl border border-lamma-botanical/30">
+                    <div class="flex justify-between items-center border-b border-lamma-botanical/20 pb-2">
+                        <span class="font-kufam font-black text-lg text-lamma-cream">خط العناوين: Kufam / Kufi Arabic</span>
+                        <span class="text-lamma-lime font-mono">Headlines (20-24px Bold)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-readex text-lamma-sand">خط النصوص والشروح: Readex Pro</span>
+                        <span class="text-lamma-sand/60 font-mono">Body & Captions (12-14px Medium)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Rules -->
+            <div class="border-t border-lamma-botanical/30 pt-4 text-xs space-y-2 text-lamma-sand/80">
+                <h3 class="text-xs font-bold text-lamma-lime uppercase tracking-wider mb-2">3. المبادئ التوجيهية للقصص (Story Philosophy)</h3>
+                <ul class="list-disc list-inside space-y-1.5 leading-relaxed">
+                    <li><strong class="text-lamma-cream">النبرة المصرية الأصيلة:</strong> صياغة العناوين بلغة عربية مصريّة مبسطة وقريبة من المتابع (مثل: "كل زرعة تستاهل حد ياخد باله منها").</li>
+                    <li><strong class="text-lamma-cream">الدمج البصري:</strong> المزج بين صور الطبيعة الحقيقية للحقول والمسح التقني للذكاء الاصطناعي (HUD Box & Scanlines).</li>
+                    <li><strong class="text-lamma-cream">تجنب التكدس:</strong> إبقاء المنطقة المركزية مرنة للتفاعل والتنفس البصري وعدم تغطية عناصر الصورة الأساسية.</li>
+                </ul>
+            </div>
+
+            <div class="pt-2 text-center">
+                <button onclick="toggleDesignSystemModal()" class="bg-lamma-lime text-lamma-dark font-bold px-6 py-2 rounded-xl hover:bg-lamma-electric transition text-xs">
+                    فهمت ذلك، العودة للمحرر
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC FOR INTERACTION AND TEMPLATES -->
+    <script>
+        // Data Structure for the 7 Preset Story Variations
+        const presets = {
+            1: {
+                headline: "كل زرعة تستاهل حد ياخد باله منها.",
+                subtext: "تجارب الاختبار الميداني للروبوت لَمّاح في الكشف المبكر عن الآفات الزراعية باستخدام الذكاء الاصطناعي.",
+                tag: "تحديث المشروع #04",
+                confidence: "98.4% Leaf Diagnostic",
+                bg: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "TARGET 01: LEAF_HEALTHY",
+                sticker: "none"
+            },
+            2: {
+                headline: "من أول سطر كود لحد أول زرعة.",
+                subtext: "رحلتنا في تدريب خوارزمية التعلم العميق لتمييز أعراض مرض اللفحة المبكرة في أوراق الطماطم.",
+                tag: "رحلة التعلم والبحث",
+                confidence: "94.2% Neural Precision",
+                bg: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "CODE: YOLO_V8_TRAIN",
+                sticker: "none"
+            },
+            3: {
+                headline: "بنجمع الأجزاء حبة حبة... كواليس التصنيع.",
+                subtext: "لحظة اختبار الشاسي والحساسات في الورشة قبل النزول الأول للحقل الميداني.",
+                tag: "كواليس التصنيع #02",
+                confidence: "Sensor Check: PASSED",
+                bg: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "HARDWARE: ESP32_CAM",
+                sticker: "none"
+            },
+            4: {
+                headline: "بنعلّم لمّاح يشوف اللي مش باين.",
+                subtext: "اختبار كاميرات الرؤية الليلية والطيفية لرصد إجهاد النبات قبل ظهور الأعراض بالعين المجردة.",
+                tag: "الرؤية الحاسوبية",
+                confidence: "Spectral Depth: 99.1%",
+                bg: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "AI_VISION: EARLY_BLIGHT",
+                sticker: "poll"
+            },
+            5: {
+                headline: "النهاردة جرّبنا، اتعلمنا، واتقدمنا.",
+                subtext: "واجهنا مشكلة في التوازن على التربة الرطبة، وقدرنا نعدل هيكل العجلات بنجاح!",
+                tag: "التحديات والإنجاز",
+                confidence: "Status: RESOLVED",
+                bg: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "FIELD_TEST: SOIL_ROVER",
+                sticker: "none"
+            },
+            6: {
+                headline: "تفتكروا لمّاح هيقدر يكتشف الاصابة دي؟",
+                subtext: "شاركونا آرائكم واقتراحاتكم في تطوير خوارزميات رصد الآفات الميدانية.",
+                tag: "استطلاع وتفاعل",
+                confidence: "Community Input",
+                bg: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "POLL: DISEASE_IDENT",
+                sticker: "poll"
+            },
+            7: {
+                headline: "مش مجرد روبوت… دي بداية فكرة.",
+                subtext: "احتفالاً بإنهاء مرحلة النمودج الأولي بنجاح. خطوة جديدة نحو مستقبل الزراعة الذكية في مصر.",
+                tag: "محطة جديدة #MILESTONE",
+                confidence: "PROJECT STATUS: READY",
+                bg: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80",
+                targetLabel: "MILESTONE: V2_RELEASE",
+                sticker: "question"
+            }
+        };
+
+        // Apply Preset Function
+        function applyPreset(id) {
+            const preset = presets[id];
+            if (!preset) return;
+
+            // Update Input Fields
+            document.getElementById('input-headline').value = preset.headline;
+            document.getElementById('input-subtext').value = preset.subtext;
+            document.getElementById('input-tag').value = preset.tag;
+            document.getElementById('input-confidence').value = preset.confidence;
+
+            // Update Visual Canvas Elements
+            document.getElementById('story-bg-img').src = preset.bg;
+            document.getElementById('cv-target-label').innerText = preset.targetLabel;
+
+            // Update Active Preset Button Styling
+            document.querySelectorAll('.preset-btn').forEach((btn, index) => {
+                if (index + 1 === id) {
+                    btn.classList.add('border-lamma-lime', 'bg-lamma-botanical/30');
+                    btn.classList.remove('border-lamma-botanical/40', 'bg-lamma-dark/50');
+                    btn.querySelector('span').className = "w-2 h-2 rounded-full bg-lamma-lime shadow-[0_0_8px_#39FF14]";
+                } else {
+                    btn.classList.remove('border-lamma-lime', 'bg-lamma-botanical/30');
+                    btn.classList.add('border-lamma-botanical/40', 'bg-lamma-dark/50');
+                    btn.querySelector('span').className = "w-2 h-2 rounded-full bg-lamma-sand/40";
+                }
+            });
+
+            // Set Sticker
+            setSticker(preset.sticker);
+
+            // Update Realtime Canvas Text
+            updateStoryText();
+        }
+
+        // Live Text Update Handler
+        function updateStoryText() {
+            const headlineText = document.getElementById('input-headline').value;
+            const subtextText = document.getElementById('input-subtext').value;
+            const tagText = document.getElementById('input-tag').value;
+            const confidenceText = document.getElementById('input-confidence').value;
+
+            document.getElementById('story-headline').innerText = headlineText || "عنوان القصة هنا";
+            document.getElementById('story-subtext').innerText = subtextText || "";
+            document.getElementById('story-badge-category').innerText = `#${tagText.replace('#','')}`;
+            document.getElementById('cv-confidence-text').innerText = `CONFIDENCE: ${confidenceText}`;
+        }
+
+        // Overlay Toggles
+        function toggleOverlay(layer) {
+            if (layer === 'scanline') {
+                const el = document.getElementById('cv-scanline');
+                const checked = document.getElementById('toggle-scanline').checked;
+                el.style.display = checked ? 'block' : 'none';
+            } else if (layer === 'boundingbox') {
+                const el = document.getElementById('cv-boundingbox');
+                const checked = document.getElementById('toggle-boundingbox').checked;
+                el.style.display = checked ? 'block' : 'none';
+            } else if (layer === 'hud') {
+                const el = document.getElementById('cv-hud-card');
+                const checked = document.getElementById('toggle-hud').checked;
+                el.style.display = checked ? 'block' : 'none';
+            } else if (layer === 'safezone') {
+                const el = document.getElementById('ig-safezone-overlay');
+                const checked = document.getElementById('toggle-safezone').checked;
+                if (checked) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            }
+        }
+
+        // Background Picker
+        function changeBackground(type) {
+            const bgMap = {
+                'leaf': 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1080&q=80',
+                'electronics': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1080&q=80',
+                'field': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1080&q=80',
+                'code': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1080&q=80'
+            };
+
+            if (bgMap[type]) {
+                document.getElementById('story-bg-img').src = bgMap[type];
+            }
+        }
+
+        // Sticker Dynamic Injector
+        function setSticker(type) {
+            const container = document.getElementById('story-sticker-container');
+            
+            if (type === 'poll') {
+                container.innerHTML = `
+                    <div class="glass-card-light rounded-2xl p-3 w-full text-center shadow-lg border border-lamma-botanical/20">
+                        <div class="text-xs font-bold text-lamma-dark mb-2 font-kufam">هل تعتقد أن الذكاء الاصطناعي سيحمي المحاصيل تماماً؟</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                            <div class="bg-lamma-botanical text-lamma-cream py-2 rounded-xl border border-lamma-lime/40">نعم، بكل تأكيد 🌿</div>
+                            <div class="bg-lamma-sand/80 text-lamma-dark py-2 rounded-xl">نحتاج المزيد من التجارب ⚙️</div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'question') {
+                container.innerHTML = `
+                    <div class="glass-card-light rounded-2xl p-3 w-full text-center shadow-lg border border-lamma-botanical/20">
+                        <div class="text-[11px] font-bold text-lamma-dark/70 mb-1">اسأل فريق لَمّاح | LAMMA7</div>
+                        <div class="text-xs font-bold text-lamma-dark mb-2 font-kufam">ايش حابين تعرفوا عن الروبوت؟ 🤖</div>
+                        <div class="bg-white/80 border border-lamma-sand rounded-xl py-2 px-3 text-xs text-gray-400 text-right">
+                            اكتب سؤالك هنا...
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        // Toggle Design System Modal
+        function toggleDesignSystemModal() {
+            const modal = document.getElementById('design-system-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Export/Download Notification
+        function downloadCanvasSnapshot() {
+            // Simulated snapshot notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-lamma-lime text-lamma-dark font-bold px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2 border border-lamma-dark text-xs animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-base"></i> <span>تم تجهيز تصميم القصة للتصدير بأعلى دقة (1080x1920 HD)!</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
+        }
+
+        // Initial Load
+        window.onload = function() {
+            applyPreset(1);
+        };
+    </script>
+</body>
+</html>

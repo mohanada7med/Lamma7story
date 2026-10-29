@@ -1,0 +1,6 @@
+{
+  "name": "LAMMA7 Story Studio | استوديو ستوري لمّاح",
+  "description": "استوديو تصميم تفاعلي متقدم لإنشاء وتخصيص وتصدير قصص إنستغرام لمشروع الروبوت الزراعي لمّاح (LAMMA7)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
