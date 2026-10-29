@@ -1646,7 +1646,7 @@ export const STORY_TEMPLATES: StoryTemplate[] = [
           locked: false,
           hidden: false,
           stickerType: 'link',
-          title: 'شاهد الفيديو كاملاً على يوتيوب 🔗',
+          title: 'شاهد الفيديو كاملاً  🔗',
           linkText: 'lamma7.ai/youtube',
           backgroundColor: '#FAF6F0',
           textColor: '#0E1A12',

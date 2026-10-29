@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-3">
         {/* Brand Logo Box */}
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2E7D32] to-[#0E1A12] border border-[#39FF14]/50 flex items-center justify-center text-[#39FF14] font-kufam font-black text-xl shadow-[0_0_12px_rgba(57,255,20,0.25)]">
-          ل
+          <img src="assets/aistudio/Group 6.png" alt="" />
         </div>
 
         <div className="flex flex-col">
